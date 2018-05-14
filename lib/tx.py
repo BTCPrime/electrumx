@@ -503,3 +503,16 @@ class DeserializerDecred(Deserializer):
             expiry,
             witness
         ), DeserializerDecred.blake256(no_witness_tx)        
+
+class DeserializerPrimecoin(Deserializer):
+    def read_header(self, height, static_header_size):
+        '''Return the block header bytes'''
+        start = self.cursor
+        # We are going to calculate the block size then read it as bytes
+        self.cursor += static_header_size
+        prime_cert = self._read_varint()
+        self.cursor += prime_cert
+        header_end = self.cursor
+        self.cursor = start
+        return self._read_nbytes(header_end)
+
