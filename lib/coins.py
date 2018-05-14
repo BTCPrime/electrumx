@@ -135,7 +135,7 @@ class Coin(object):
         '''
         if script and script[0] == OP_RETURN:
             return None
-        return sha256(script)[:cls.HASHX_LEN]
+        return sha256(script).digest()[:cls.HASHX_LEN]
 
     @util.cachedproperty
     def address_handlers(cls):
