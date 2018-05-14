@@ -135,7 +135,7 @@ class Coin(object):
         '''
         if script and script[0] == OP_RETURN:
             return None
-        return sha256(script).digest()[:cls.HASHX_LEN]
+        return sha256(script)[:cls.HASHX_LEN]
 
     @util.cachedproperty
     def address_handlers(cls):
@@ -1433,6 +1433,27 @@ class Feathercoin(Coin):
         'electrumx-ch-1.feathercoin.ch s t',
     ]
 
+class UFO(Coin):
+    NAME = "UniformFiscalObject"
+    SHORTNAME = "UFO"
+    NET = "mainnet"
+    XPUB_VERBYTES = bytes.fromhex("0488B21E")
+    XPRV_VERBYTES = bytes.fromhex("0488ADE4")
+    P2PKH_VERBYTE = bytes.fromhex("1B")
+    P2SH_VERBYTES = [bytes.fromhex("44")]
+    WIF_BYTE = bytes.fromhex("9B")
+    GENESIS_HASH = ('ba1d39b4928ab03d813d952daf65fb77'
+                    '97fcf538a9c1b8274f4edc8557722d13')
+    DESERIALIZER = lib_tx.DeserializerSegWit
+    TX_COUNT = 1608926
+    TX_COUNT_HEIGHT = 1300154
+    TX_PER_BLOCK = 2
+    RPC_PORT = 9888
+    REORG_LIMIT = 2000
+    PEERS = [
+        'electrumx1.ufobject.com s t',
+    ]
+
 class Newyorkcoin(AuxPowMixin, Coin):
     NAME = "Newyorkcoin"
     SHORTNAME = "NYC"
@@ -1592,3 +1613,26 @@ class Axe(Dash):
         '''
         import x11_hash
         return x11_hash.getPoWHash(header)
+
+class PrimecoinTestnet(Coin):
+    NAME = "Primecoin"
+    SHORTNAME = "XPM"
+    NET = "testnet"
+    XPUB_VERBYTES = bytes.fromhex("043587cf")
+    XPRV_VERBYTES = bytes.fromhex("04358394")
+    P2PKH_VERBYTE = bytes.fromhex("6F")
+    P2SH_VERBYTES = [bytes.fromhex("C4")]
+    WIF_BYTE = bytes.fromhex("EF")
+    GENESIS_HASH = ('221156cf301bc3585e72de34fe1efdb6fbd703bc27cfc468faa1cdd889d0efa0')
+    TX_COUNT = 1586358
+    TX_COUNT_HEIGHT = 1544045
+    TX_PER_BLOCK = 1
+    RPC_PORT = 9914
+    BASIC_HEADER_SIZE = 80
+    DESERIALIZER = lib_tx.DeserializerPrimecoin
+
+    @classmethod
+    def block_header(cls, block, height):
+        '''Return the block header bytes'''
+        deserializer = cls.DESERIALIZER(block)
+        return deserializer.read_header(height, cls.BASIC_HEADER_SIZE)
