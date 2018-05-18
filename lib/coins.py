@@ -1630,9 +1630,26 @@ class PrimecoinTestnet(Coin):
     RPC_PORT = 9914
     BASIC_HEADER_SIZE = 80
     DESERIALIZER = lib_tx.DeserializerPrimecoin
+    STATIC_BLOCK_HEADERS = False
 
     @classmethod
     def block_header(cls, block, height):
         '''Return the block header bytes'''
         deserializer = cls.DESERIALIZER(block)
         return deserializer.read_header(height, cls.BASIC_HEADER_SIZE)
+
+    @classmethod
+    def electrum_header(cls, header, height):
+        version, = struct.unpack('<I', header[:4])
+        timestamp, bits, nonce = struct.unpack('<III', header[68:80])
+        return {
+            'block_height': height,
+            'version': version,
+            'prev_block_hash': hash_to_str(header[4:36]),
+            'merkle_root': hash_to_str(header[36:68]),
+            'timestamp': timestamp,
+            'bits': bits,
+            'nonce': nonce,
+            'bnPrimeChainMultiplier': header[80:].hex()
+        }
+
