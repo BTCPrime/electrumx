@@ -515,4 +515,3 @@ class DeserializerPrimecoin(Deserializer):
         header_end = self.cursor
         self.cursor = start
         return self._read_nbytes(header_end)
-
