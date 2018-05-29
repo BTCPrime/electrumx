@@ -514,4 +514,17 @@ class DeserializerPrimecoin(Deserializer):
         self.cursor += prime_cert
         header_end = self.cursor
         self.cursor = start
-        return self._read_nbytes(header_end)
+        real_header = self._read_nbytes(header_end)
+        padded_header = real_header + bytes(336-len(real_header))
+        return padded_header
+                               
+    def read_header_length(self, height, static_header_size):
+        '''Return the length of the real header'''
+        start = self.cursor
+        self.cursor += static_header_size
+        prime_cert = self._read_varint()
+        self.cursor += prime_cert
+        header_end = self.cursor
+        self.cursor = start
+        return header_end
+                               

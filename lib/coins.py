@@ -1629,6 +1629,7 @@ class PrimecoinTestnet(Coin):
     TX_PER_BLOCK = 1
     RPC_PORT = 9914
     BASIC_HEADER_SIZE = 80
+    CHUNK_SIZE = 1008
     DESERIALIZER = lib_tx.DeserializerPrimecoin
     STATIC_BLOCK_HEADERS = False
 
@@ -1637,6 +1638,11 @@ class PrimecoinTestnet(Coin):
         '''Return the block header bytes'''
         deserializer = cls.DESERIALIZER(block)
         return deserializer.read_header(height, cls.BASIC_HEADER_SIZE)
+    
+    @classmethod
+    def block_header_real_len(cls, block, height):
+        deserializer = cls.DESERIALIZER(block)
+        return deserializer.read_header_length(height, cls.BASIC_HEADER_SIZE)
 
     @classmethod
     def electrum_header(cls, header, height):
@@ -1652,4 +1658,19 @@ class PrimecoinTestnet(Coin):
             'nonce': nonce,
             'bnPrimeChainMultiplier': header[80:].hex()
         }
+      
+    @classmethod
+    def header_hash(cls, header):
+        '''Given a header return hash'''
+        mult_len = int(header[80:81].hex(),16)
+        full_len = 81 + mult_len
+        return double_sha256(header[:full_len])
+      
+    @classmethod
+    def block(cls, raw_block, height):
+        '''Return a Block namedtuple given a raw block and its height.'''
+        real_header_len = cls.block_header_real_len(raw_block, height)
+        header = cls.block_header(raw_block, height)
+        txs = cls.DESERIALIZER(raw_block, start=real_header_len).read_tx_block()
+        return Block(raw_block, header, txs)
 
