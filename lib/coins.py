@@ -1674,3 +1674,64 @@ class PrimecoinTestnet(Coin):
         txs = cls.DESERIALIZER(raw_block, start=real_header_len).read_tx_block()
         return Block(raw_block, header, txs)
 
+class Primecoin(Coin):
+    NAME = "Primecoin"
+    SHORTNAME = "XPM"
+    NET = "mainnet"
+    XPUB_VERBYTES = bytes.fromhex("0488B21E")
+    XPRV_VERBYTES = bytes.fromhex("0488ADE4")
+    P2PKH_VERBYTE = bytes.fromhex("17")
+    P2SH_VERBYTES = [bytes.fromhex("53")]
+    WIF_BYTE = bytes.fromhex("80")
+    GENESIS_HASH = ('963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106')
+    TX_COUNT = 5417827
+    TX_COUNT_HEIGHT = 2702839
+    TX_PER_BLOCK = 2
+    RPC_PORT = 9914
+    BASIC_HEADER_SIZE = 80
+    CHUNK_SIZE = 1008
+    DESERIALIZER = lib_tx.DeserializerPrimecoin
+    STATIC_BLOCK_HEADERS = False
+
+    @classmethod
+    def block_header(cls, block, height):
+        '''Return the block header bytes'''
+        deserializer = cls.DESERIALIZER(block)
+        return deserializer.read_header(height, cls.BASIC_HEADER_SIZE)
+    
+    @classmethod
+    def block_header_real_len(cls, block, height):
+        deserializer = cls.DESERIALIZER(block)
+        return deserializer.read_header_length(height, cls.BASIC_HEADER_SIZE)
+
+    @classmethod
+    def electrum_header(cls, header, height):
+        version, = struct.unpack('<I', header[:4])
+        timestamp, bits, nonce = struct.unpack('<III', header[68:80])
+        return {
+            'block_height': height,
+            'version': version,
+            'prev_block_hash': hash_to_str(header[4:36]),
+            'merkle_root': hash_to_str(header[36:68]),
+            'timestamp': timestamp,
+            'bits': bits,
+            'nonce': nonce,
+            'bnPrimeChainMultiplier': header[80:].hex()
+        }
+      
+    @classmethod
+    def header_hash(cls, header):
+        '''Given a header return hash'''
+        mult_len = int(header[80:81].hex(),16)
+        full_len = 81 + mult_len
+        return double_sha256(header[:full_len])
+      
+    @classmethod
+    def block(cls, raw_block, height):
+        '''Return a Block namedtuple given a raw block and its height.'''
+        real_header_len = cls.block_header_real_len(raw_block, height)
+        header = cls.block_header(raw_block, height)
+        txs = cls.DESERIALIZER(raw_block, start=real_header_len).read_tx_block()
+        return Block(raw_block, header, txs)
+
+
