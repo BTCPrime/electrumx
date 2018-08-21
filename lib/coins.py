@@ -1682,7 +1682,7 @@ class Primecoin(Coin):
     XPRV_VERBYTES = bytes.fromhex("0488ADE4")
     P2PKH_VERBYTE = bytes.fromhex("17")
     P2SH_VERBYTES = [bytes.fromhex("53")]
-    WIF_BYTE = bytes.fromhex("80")
+    WIF_BYTE = bytes.fromhex("97")
     GENESIS_HASH = ('963d17ba4dc753138078a2f56afb3af9674e2546822badff26837db9a0152106')
     TX_COUNT = 5417827
     TX_COUNT_HEIGHT = 2702839
